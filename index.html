@@ -72,6 +72,7 @@
           const data = await response.json();
           return `Bot Response: I received "${message}"`;
         } catch (error) {
+          console.error('API call failed:', error);
           return `Error: Unable to reach the API.`;
         }
       }
