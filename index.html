@@ -58,6 +58,19 @@
 
       // Mock API Call
       async function callChatAPI(message) {
+      const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+      const apiUrl = 'https://msc-service-v2-dev.isuzu-tis.com/api/v1/chat';
+      
+      fetch(proxyUrl + apiUrl, {
+        method: 'POST',
+        headers: {
+              "Content-Type": "application/json",
+              usertoken: "CF04B077-7D16-498F-AB2A-B0DCDD195362",
+            },
+         body: { message: message, "sessionId": "" },
+       }).then((response) => response.json()).then((data) => console.log(data)).catch((error) => console.error('Error:', error));
+
+        /*
         const apiUrl = "https://msc-service-v2-dev.isuzu-tis.com/api/v1/chat";
         try {
           // จำลองการเรียก API (สามารถเปลี่ยนให้เชื่อมต่อ API จริงได้)
@@ -71,6 +84,7 @@
           });
           const data = await response.json();
           return `Bot Response: I received "${message}"`;
+        */
         } catch (error) {
           console.error('API call failed:', error);
           return `Error: Unable to reach the API!`;
