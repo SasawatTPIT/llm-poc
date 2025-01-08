@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatbot</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      #chatWindow {
+        width: 100%;
+        height: 300px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        overflow-y: scroll;
+        background-color: #f9f9f9;
+      }
+      .message {
+        margin: 5px 0;
+      }
+      .user {
+        text-align: right;
+        color: blue;
+      }
+      .bot {
+        text-align: left;
+        color: green;
+      }
+      #inputArea {
+        display: flex;
+        margin-top: 10px;
+      }
+      #inputField {
+        flex: 1;
+        padding: 10px;
+        font-size: 14px;
+      }
+      #sendButton {
+        padding: 10px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Chat with API</h1>
+    <div id="chatWindow"></div>
+    <div id="inputArea">
+      <input type="text" id="inputField" placeholder="Type your message..." />
+      <button id="sendButton">Send</button>
+    </div>
+
+    <script>
+      const chatWindow = document.getElementById("chatWindow");
+      const inputField = document.getElementById("inputField");
+      const sendButton = document.getElementById("sendButton");
+
+      // Mock API Call
+      async function callChatAPI(message) {
+        const apiUrl = "https://msc-service-v2-dev.isuzu-tis.com/api/v1/chat";
+        try {
+          // จำลองการเรียก API (สามารถเปลี่ยนให้เชื่อมต่อ API จริงได้)
+          const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              usertoken: "CF04B077-7D16-498F-AB2A-B0DCDD195362",
+            },
+            body: JSON.stringify({ message: message }),
+          });
+          const data = await response.json();
+          return `Bot Response: I received "${message}"`;
+        } catch (error) {
+          return `Error: Unable to reach the API.`;
+        }
+      }
+
+      function addMessageToChat(message, sender) {
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", sender);
+        messageDiv.textContent = message;
+        chatWindow.appendChild(messageDiv);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      }
+
+      sendButton.addEventListener("click", async () => {
+        const userMessage = inputField.value.trim();
+        if (!userMessage) return;
+
+        addMessageToChat(userMessage, "user");
+        inputField.value = "";
+
+        const botResponse = await callChatAPI(userMessage);
+        addMessageToChat(botResponse, "bot");
+      });
+
+      inputField.addEventListener("keypress", (event) => {
+        if (event.key === "Enter") {
+          sendButton.click();
+        }
+      });
+    </script>
+  </body>
+</html>
