@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chatbot</title>
+    <title>Chatbot with Feedback</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -27,6 +27,27 @@
       .bot {
         text-align: left;
         color: green;
+      }
+      .feedback {
+        margin-top: 5px;
+        text-align: left;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 5px;
+        display: inline-block;
+        background-color: #f1f1f1;
+      }
+      .thumb {
+        cursor: pointer;
+        font-size: 12px;
+        margin: 0 5px;
+        padding: 2px 5px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        background-color: #fff;
+      }
+      .thumb:hover {
+        background-color: #e0e0e0;
       }
       #inputArea {
         display: flex;
@@ -56,46 +77,83 @@
       const inputField = document.getElementById("inputField");
       const sendButton = document.getElementById("sendButton");
 
-      // Mock API Call
       async function callChatAPI(message) {
-        const apiUrl = "https://msc-service-v2-dev.isuzu-tis.com/api/v1/chat";
-        /*
-              fetch(apiUrl, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  usertoken: "CF04B077-7D16-498F-AB2A-B0DCDD195362",
-                },
-                body: { message: message, sessionId: "" },
-              })
-                .then((response) => response.json())
-                .then((data) => console.log(data))
-                .catch((error) => console.error("Error:", error));
-      */
+        // const apiUrl = "http://localhost:3000/api/v1/chat/invoke";
+        const apiUrl =
+          "https://msc-service-v2-dev.isuzu-tis.com/api/v1/chat/invoke";
 
         try {
           const response = await fetch(apiUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              usertoken: "CF04B077-7D16-498F-AB2A-B0DCDD195362",
+              usertoken: "dummy",
             },
-            body: { message: message, sessionId: "" },
+            body: JSON.stringify({ message: message, sessionId: "" }),
           });
 
           const data = await response.json();
-          return `Bot Response: I received "${message}"`;
+          return data;
         } catch (error) {
           console.error("API call failed:", error);
-          return `Error: Unable to reach the API!`;
+          return { message: "Error: Unable to reach the API!", sessionId: "" };
         }
       }
 
-      function addMessageToChat(message, sender) {
+      async function sendFeedback(sessionId, feedback) {
+        // const feedbackApiUrl = "http://localhost:3000/api/v1/chat/evaluate";
+        const feedbackApiUrl =
+          "https://msc-service-v2-dev.isuzu-tis.com/api/v1/chat/evaluate";
+
+        try {
+          const response = await fetch(feedbackApiUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              usertoken: "dummy",
+            },
+            body: JSON.stringify({ sessionId, feedback }),
+          });
+
+          if (response.ok) {
+            console.log("Feedback sent successfully");
+          } else {
+            console.error("Failed to send feedback");
+          }
+        } catch (error) {
+          console.error("Feedback API call failed:", error);
+        }
+      }
+
+      function addMessageToChat(message, sender, sessionId = null) {
         const messageDiv = document.createElement("div");
         messageDiv.classList.add("message", sender);
-        messageDiv.textContent = message;
+        messageDiv.textContent = sender === "bot" ? `AI: ${message}` : message;
         chatWindow.appendChild(messageDiv);
+
+        if (sender === "bot" && sessionId) {
+          const feedbackDiv = document.createElement("div");
+          feedbackDiv.classList.add("feedback");
+
+          const thumbUp = document.createElement("span");
+          thumbUp.classList.add("thumb");
+          thumbUp.textContent = "👍";
+          thumbUp.addEventListener("click", () =>
+            sendFeedback(sessionId, "thumb-up")
+          );
+
+          const thumbDown = document.createElement("span");
+          thumbDown.classList.add("thumb");
+          thumbDown.textContent = "👎";
+          thumbDown.addEventListener("click", () =>
+            sendFeedback(sessionId, "thumb-down")
+          );
+
+          feedbackDiv.appendChild(thumbUp);
+          feedbackDiv.appendChild(thumbDown);
+          chatWindow.appendChild(feedbackDiv);
+        }
+
         chatWindow.scrollTop = chatWindow.scrollHeight;
       }
 
@@ -107,7 +165,7 @@
         inputField.value = "";
 
         const botResponse = await callChatAPI(userMessage);
-        addMessageToChat(botResponse, "bot");
+        addMessageToChat(botResponse.message, "bot", botResponse.sessionId);
       });
 
       inputField.addEventListener("keypress", (event) => {
