@@ -49,6 +49,18 @@
       .thumb:hover {
         background-color: #e0e0e0;
       }
+      .loading {
+        font-style: italic;
+        color: gray;
+      }
+      .response-box {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        background-color: #f7f7f7;
+        margin: 10px 0;
+        white-space: pre-wrap;
+      }
       #inputArea {
         display: flex;
         margin-top: 10px;
@@ -126,9 +138,10 @@
       }
 
       function addMessageToChat(message, sender, sessionId = null) {
+        const newMessage = sender === "bot" ? `AI: ${message}` : message;
         const messageDiv = document.createElement("div");
         messageDiv.classList.add("message", sender);
-        messageDiv.textContent = sender === "bot" ? `AI: ${message}` : message;
+        messageDiv.innerHTML = newMessage.replace(/\n/g, "<br>");
         chatWindow.appendChild(messageDiv);
 
         if (sender === "bot" && sessionId) {
@@ -157,6 +170,21 @@
         chatWindow.scrollTop = chatWindow.scrollHeight;
       }
 
+      function addLoadingIndicator() {
+        const loadingDiv = document.createElement("div");
+        loadingDiv.classList.add("message", "bot", "loading");
+        loadingDiv.textContent = "Typing...";
+        chatWindow.appendChild(loadingDiv);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+        return loadingDiv;
+      }
+
+      function removeLoadingIndicator(loadingDiv) {
+        if (loadingDiv && loadingDiv.parentNode) {
+          loadingDiv.parentNode.removeChild(loadingDiv);
+        }
+      }
+
       sendButton.addEventListener("click", async () => {
         const userMessage = inputField.value.trim();
         if (!userMessage) return;
@@ -164,7 +192,10 @@
         addMessageToChat(userMessage, "user");
         inputField.value = "";
 
+        const loadingDiv = addLoadingIndicator();
+
         const botResponse = await callChatAPI(userMessage);
+        removeLoadingIndicator(loadingDiv);
         addMessageToChat(botResponse.message, "bot", botResponse.sessionId);
       });
 
