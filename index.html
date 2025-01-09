@@ -175,14 +175,14 @@
             thumbUp.classList.add("thumb");
             thumbUp.textContent = "👍";
             thumbUp.addEventListener("click", () =>
-              sendFeedback(sessionId, "thumb-up")
+              handleFeedbackClick(thumbUp, thumbDown, sessionId, "thumb-up")
             );
 
             const thumbDown = document.createElement("span");
             thumbDown.classList.add("thumb");
             thumbDown.textContent = "👎";
             thumbDown.addEventListener("click", () =>
-              sendFeedback(sessionId, "thumb-down")
+              handleFeedbackClick(thumbUp, thumbDown, sessionId, "thumb-down")
             );
 
             feedbackDiv.appendChild(thumbUp);
@@ -211,6 +211,29 @@
       function removeLoadingIndicator(loadingDiv) {
         if (loadingDiv && loadingDiv.parentNode) {
           loadingDiv.parentNode.removeChild(loadingDiv);
+        }
+      }
+
+      function handleFeedbackClick(thumbUp, thumbDown, sessionId, feedback) {
+        // Send feedback
+        sendFeedback(sessionId, feedback);
+
+        // Disable both thumb buttons after one click
+        thumbUp.disabled = true;
+        thumbDown.disabled = true;
+
+        // Optionally, change button style to show they are disabled
+        thumbUp.style.opacity = 0.5;
+        thumbDown.style.opacity = 0.5;
+        thumbUp.style.cursor = "not-allowed";
+        thumbDown.style.cursor = "not-allowed";
+
+        if (feedback === "thumb-up") {
+          thumbUp.style.backgroundColor = "green";
+          thumbDown.style.backgroundColor = "";
+        } else {
+          thumbDown.style.backgroundColor = "red";
+          thumbUp.style.backgroundColor = "";
         }
       }
 
