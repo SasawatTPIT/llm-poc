@@ -100,7 +100,9 @@
       }
 
       async function callChatAPI(message) {
-        const apiUrl = "http://localhost:3000/api/v1/chat/invoke";
+        // const apiUrl = "http://localhost:3000/api/v1/chat/invoke";
+        const apiUrl =
+          "https://msc-service-v2-dev.isuzu-tis.com/api/v1/chat/invoke";
 
         try {
           const response = await fetch(apiUrl, {
@@ -125,7 +127,9 @@
       }
 
       async function sendFeedback(sessionId, feedback) {
-        const feedbackApiUrl = "http://localhost:3000/api/v1/chat/evaluate";
+        // const feedbackApiUrl = "http://localhost:3000/api/v1/chat/evaluate";
+        const feedbackApiUrl =
+          "https://msc-service-v2-dev.isuzu-tis.com/api/v1/chat/evaluate";
 
         try {
           const response = await fetch(feedbackApiUrl, {
