@@ -11,7 +11,7 @@
       }
       #chatWindow {
         width: 100%;
-        height: 520px;
+        height: 500px;
         border: 1px solid #ccc;
         padding: 10px;
         overflow-y: scroll;
@@ -173,18 +173,36 @@
             const feedbackDiv = document.createElement("div");
             feedbackDiv.classList.add("feedback");
 
+            const feedbackText = document.createElement("span");
+            feedbackText.textContent = "กรุณาให้ feedback";
+            feedbackText.style.color = "red";
+            feedbackText.style.marginRight = "10px";
+            feedbackDiv.appendChild(feedbackText);
+
             const thumbUp = document.createElement("span");
             thumbUp.classList.add("thumb");
             thumbUp.textContent = "👍";
             thumbUp.addEventListener("click", () =>
-              handleFeedbackClick(thumbUp, thumbDown, sessionId, "thumb-up")
+              handleFeedbackClick(
+                thumbUp,
+                thumbDown,
+                sessionId,
+                "thumb-up",
+                feedbackText
+              )
             );
 
             const thumbDown = document.createElement("span");
             thumbDown.classList.add("thumb");
             thumbDown.textContent = "👎";
             thumbDown.addEventListener("click", () =>
-              handleFeedbackClick(thumbUp, thumbDown, sessionId, "thumb-down")
+              handleFeedbackClick(
+                thumbUp,
+                thumbDown,
+                sessionId,
+                "thumb-down",
+                feedbackText
+              )
             );
 
             feedbackDiv.appendChild(thumbUp);
@@ -216,15 +234,23 @@
         }
       }
 
-      function handleFeedbackClick(thumbUp, thumbDown, sessionId, feedback) {
+      function handleFeedbackClick(
+        thumbUp,
+        thumbDown,
+        sessionId,
+        feedback,
+        feedbackText
+      ) {
         // Send feedback
         sendFeedback(sessionId, feedback);
+
+        if (feedbackText) {
+          feedbackText.style.display = "none";
+        }
 
         // Disable both thumb buttons after one click
         thumbUp.disabled = true;
         thumbDown.disabled = true;
-
-        // Optionally, change button style to show they are disabled
         thumbUp.style.opacity = 0.5;
         thumbDown.style.opacity = 0.5;
         thumbUp.style.cursor = "not-allowed";
