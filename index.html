@@ -10,9 +10,13 @@
         margin: 20px;
       }
       #chatWindow {
-        width: 100%;
-        height: 500px;
+        display: flex;
+        gap: 10px;
+      }
+      .chatColumn {
+        flex: 1;
         border: 1px solid #ccc;
+        height: 500px;
         padding: 10px;
         overflow-y: scroll;
         background-color: #f9f9f9;
@@ -84,14 +88,18 @@
     <h1>
       Chat with OMO AI <span style="font-size: 12px">(Test Version)</span>
     </h1>
-    <div id="chatWindow"></div>
+    <div id="chatWindow">
+      <div id="chatColumn1" class="chatColumn"><b><u>Sonnet</u></b></div>
+      <div id="chatColumn2" class="chatColumn"><b><u>Haiku</u></b></div>
+    </div>
     <div id="inputArea">
       <input type="text" id="inputField" placeholder="Type your message..." />
       <button id="sendButton">Send</button>
     </div>
 
     <script>
-      const chatWindow = document.getElementById("chatWindow");
+      const chatColumn1 = document.getElementById("chatColumn1");
+      const chatColumn2 = document.getElementById("chatColumn2");
       const inputField = document.getElementById("inputField");
       const sendButton = document.getElementById("sendButton");
 
@@ -105,7 +113,7 @@
         }
       }
 
-      async function callChatAPI(message) {
+      async function callChatAPI(message, model) {
         // const apiUrl = "http://localhost:3000/api/v1/chat/invoke";
         const apiUrl =
           "https://msc-service-v2-dev.isuzu-tis.com/api/v1/chat/invoke";
@@ -121,6 +129,7 @@
               message: message,
               sessionId: "",
               userName: userName,
+              model: model,
             }),
           });
 
@@ -161,13 +170,14 @@
         }
       }
 
-      function addMessageToChat(message, sender, sessionId = null) {
+      function addMessageToChat(message, sender, column, sessionId = null) {
         if (message) {
           const newMessage = sender === "bot" ? `AI: ${message}` : message;
           const messageDiv = document.createElement("div");
           messageDiv.classList.add("message", sender);
           messageDiv.innerHTML = newMessage.replace(/\n/g, "<br>");
-          chatWindow.appendChild(messageDiv);
+          column.appendChild(messageDiv);
+          column.scrollTop = column.scrollHeight;
 
           if (sender === "bot" && sessionId) {
             const feedbackDiv = document.createElement("div");
@@ -207,7 +217,7 @@
 
             feedbackDiv.appendChild(thumbUp);
             feedbackDiv.appendChild(thumbDown);
-            chatWindow.appendChild(feedbackDiv);
+            column.appendChild(feedbackDiv);
           }
 
           chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -219,12 +229,12 @@
         }
       }
 
-      function addLoadingIndicator() {
+      function addLoadingIndicator(column) {
         const loadingDiv = document.createElement("div");
         loadingDiv.classList.add("message", "bot", "loading");
         loadingDiv.textContent = "Typing...";
-        chatWindow.appendChild(loadingDiv);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
+        column.appendChild(loadingDiv);
+        column.scrollTop = column.scrollHeight;
         return loadingDiv;
       }
 
@@ -269,14 +279,30 @@
         const userMessage = inputField.value.trim();
         if (!userMessage) return;
 
-        addMessageToChat(userMessage, "user");
+        addMessageToChat(userMessage, "user", chatColumn1);
+        addMessageToChat(userMessage, "user", chatColumn2);
         inputField.value = "";
 
-        const loadingDiv = addLoadingIndicator();
+        const loading1 = addLoadingIndicator(chatColumn1);
+        const loading2 = addLoadingIndicator(chatColumn2);
 
-        const botResponse = await callChatAPI(userMessage);
-        removeLoadingIndicator(loadingDiv);
-        addMessageToChat(botResponse.message, "bot", botResponse.sessionId);
+        const botResponse1 = await callChatAPI(userMessage, 'sonnet');
+        const botResponse2 = await callChatAPI(userMessage, 'haiku');
+
+        removeLoadingIndicator(loading1);
+        removeLoadingIndicator(loading2);
+        addMessageToChat(
+          botResponse1.message,
+          "bot",
+          chatColumn1,
+          botResponse1.sessionId
+        );
+        addMessageToChat(
+          botResponse2.message,
+          "bot",
+          chatColumn2,
+          botResponse2.sessionId
+        );
       });
 
       inputField.addEventListener("keypress", (event) => {
